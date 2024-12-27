@@ -28,7 +28,8 @@ variable (e : Perm α) (a b c d x y z : α) [DecidableEq α]
 
 @[simp]
 theorem swap_conj : e * (swap a b) * e⁻¹ = swap (e a) (e b) := by
-  aesop
+  -- aesop
+  exact Eq.symm (swap_apply_apply e a b)
 
 @[simp]
 theorem swap_conj' : e⁻¹ * (swap a b) * e = swap (e⁻¹ a) (e⁻¹ b) :=
@@ -48,10 +49,25 @@ theorem swap_conj₂' : e⁻¹ * (swap a b) * (swap c d) * e =
 /-- A cyclic permutation `a → b → c → a`. -/
 @[aesop norm]
 def cycle : Perm α :=
-  if a = b ∨ b = c ∨ c = a then 1 else swap a b * swap b c
+  if a = b ∨ b = c ∨ c = a then 1
+  else swap a b * swap b c
 
 theorem cycle_fst {a b c : α} (h₂ : b ≠ c) (h₃ : c ≠ a) : cycle a b c a = b := by
-  aesop
+  -- aesop
+  unfold cycle
+  simp only [h₂,h₃]
+  simp only [or_self, or_false]
+  by_cases h1:a=b
+  {
+    simp [h1]
+  }
+  {
+    simp only [h1]
+    simp
+    have h2: (swap b c) a = a := by exact swap_apply_of_ne_of_ne h1 (id (Ne.symm h₃))
+    rw [h2]
+    exact swap_apply_left a b
+  }
 
 theorem cycle_snd {a b c : α} (h₁ : a ≠ b) (h₃ : c ≠ a) : cycle a b c b = c := by
   aesop
@@ -65,9 +81,13 @@ theorem cycle_apply_of_ne {a b c d : α} (h₁ : d ≠ a) (h₂ : d ≠ b) (h₃
 
 theorem cycle_cyclic : cycle a b c = cycle b c a := by
   aesop
+  -- unfold cycle -- 然后分类讨论
+
 
 theorem cycle_inv : (cycle a b c)⁻¹ = cycle a c b := by
   aesop
+
+-- interesting！！
 
 @[simp]
 theorem cycle_conj : e * (cycle a b c) * e⁻¹ = cycle (e a) (e b) (e c) := by
